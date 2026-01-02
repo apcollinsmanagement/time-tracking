@@ -25,21 +25,6 @@ export default function App() {
       next: (data) => {
         const normalized = (data.items as any[]).map((item) => {
           if (!item) return item;
-          if (item.content && typeof item.content === "string") {
-            try {
-              const parsed = JSON.parse(item.content);
-              return {
-                ...item,
-                hours: parsed.hours ?? item.hours,
-                purpose: parsed.purpose ?? item.purpose,
-                distanceMiles: parsed.distanceMiles ?? item.distanceMiles,
-                vehicleUsed: parsed.vehicleUsed ?? item.vehicleUsed,
-                date: parsed.date ?? item.date,
-              };
-            } catch {
-              return item;
-            }
-          }
           return {
             ...item,
             date: item.date ?? undefined,
@@ -110,17 +95,6 @@ export default function App() {
         distanceMiles: parsedDistance !== undefined ? parsedDistance : undefined,
         vehicleUsed: vehicleUsed.trim() || undefined,
       };
-
-      // Fallback for APIs that still expect `content` or older schema:
-      // include a JSON string in content so existing backend accepts the data.
-      // Remove/comment this line after your backend schema supports `date`, `purpose`, etc.
-      payload.content = JSON.stringify({
-        hours: parsedHours,
-        purpose: purpose.trim(),
-        date,
-        distanceMiles: parsedDistance,
-        vehicleUsed: vehicleUsed.trim(),
-      });
 
       await client.models.Records.create(payload);
       setHours("");
