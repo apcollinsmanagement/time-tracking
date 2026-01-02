@@ -241,7 +241,6 @@ export default function App() {
                 ? ` — ${Number(rec.distanceMiles)} mi`
                 : ""}
               {rec.vehicleUsed ? ` — ${rec.vehicleUsed}` : ""}
-              {rec.createdAt ? ` — ${new Date(rec.createdAt).toLocaleString()}` : ""}
             </div>
           </li>
         ))}
