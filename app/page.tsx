@@ -20,6 +20,8 @@ export default function App() {
   const [hours, setHours] = useState<string>("");
   const [purpose, setPurpose] = useState<string>("");
   const [startLocation, setStartLocation] = useState<string>("");
+  const [startLocationOption, setStartLocationOption] = useState<string>("");
+  const [endLocationOption, setEndLocationOption] = useState<string>("");
   const [endLocation, setEndLocation] = useState<string>("");
   const [distanceMiles, setDistanceMiles] = useState<string>("");
   const [vehicleUsed, setVehicleUsed] = useState<string>("");
@@ -164,29 +166,100 @@ export default function App() {
             type="text"
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
-            placeholder="What was the task or purpose?"
+            placeholder="What was the task?"
             required
           />
         </label>
         <br />
         <label>
           Start Location
-          <input
-            type="text"
-            value={startLocation}
-            onChange={(e) => setStartLocation(e.target.value)}
-            placeholder="Start location"
-          />
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <select
+              value={startLocationOption}
+              onChange={(e) => {
+                const v = e.target.value;
+                setStartLocationOption(v);
+                if (v === "home") {
+                  setStartLocation("6110 Misty Creek Drive Loveland OH 45140");
+                } else if (v === "custom") {
+                  setStartLocation("");
+                } else {
+                  setStartLocation("");
+                }
+              }}
+              style={{ minWidth: 180 }}
+            >
+              <option value="">Select location</option>
+              <option value="home">Home</option>
+              <option value="custom">Other (custom)</option>
+            </select>
+
+            {startLocationOption === "custom" && (
+              <input
+                type="text"
+                value={startLocation}
+                onChange={(e) => setStartLocation(e.target.value)}
+                placeholder="Enter custom start location"
+                style={{ minWidth: 240 }}
+              />
+            )}
+
+            {startLocationOption === "home" && (
+              <input
+                type="text"
+                value={startLocation}
+                readOnly
+                style={{ minWidth: 240 }}
+              />
+            )}
+          </div>
         </label>
         <br />
         <label>
           End Location
-          <input
-            type="text"
-            value={endLocation}
-            onChange={(e) => setEndLocation(e.target.value)}
-            placeholder="End location"
-          />
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <select
+              value={endLocationOption}
+              onChange={(e) => {
+                const v = e.target.value;
+                setEndLocationOption(v);
+                if (v === "home") {
+                  setEndLocation("6110 Misty Creek Drive Loveland OH 45140");
+                } else if (v === "girard") {
+                  setEndLocation("6317 Girard Ave Cincinnati OH 45213");
+                } else if (v === "custom") {
+                  setEndLocation("");
+                } else {
+                  setEndLocation("");
+                }
+              }}
+              style={{ minWidth: 220 }}
+            >
+              <option value="">Select location</option>
+              <option value="home">Home</option>
+              <option value="girard">Girard</option>
+              <option value="custom">Other (custom)</option>
+            </select>
+
+            {endLocationOption === "custom" && (
+              <input
+                type="text"
+                value={endLocation}
+                onChange={(e) => setEndLocation(e.target.value)}
+                placeholder="Enter custom end location"
+                style={{ minWidth: 240 }}
+              />
+            )}
+
+            {(endLocationOption === "home" || endLocationOption === "girard") && (
+              <input
+                type="text"
+                value={endLocation}
+                readOnly
+                style={{ minWidth: 240 }}
+              />
+            )}
+          </div>
         </label>
         <br />
         <label>
@@ -220,12 +293,16 @@ export default function App() {
         <br />
         <label>
           Vehicle Used
-          <input
-            type="text"
+          <select
             value={vehicleUsed}
             onChange={(e) => setVehicleUsed(e.target.value)}
-            placeholder="Car / Bike / Other"
-          />
+            required
+            style={{ minWidth: 180 }}
+          >
+            <option value="">Select vehicle</option>
+            <option value="Kia Telluride">Kia Telluride</option>
+            <option value="Ford Focus">Ford Focus</option>
+          </select>
         </label>
         <br />
         <button type="submit">Add record</button>
