@@ -18,13 +18,17 @@ export default function App() {
   // switch back to the generated types.
   const [records, setRecords] = useState<Array<any>>([]);
   const [hours, setHours] = useState<string>("");
-  const [description, setDescription] = useState<string>("");
+  const [purpose, setPurpose] = useState<string>("");
+  const [startLocation, setStartLocation] = useState<string>("");
+  const [endLocation, setEndLocation] = useState<string>("");
+  const [distanceMiles, setDistanceMiles] = useState<string>("");
+  const [vehicleUsed, setVehicleUsed] = useState<string>("");
 
   function listRecords() {
     client.models.Records.observeQuery().subscribe({
       next: (data) => {
         // normalize items so we support both:
-        // - new schema with `hours` and `description`
+        // - new schema with `hours`, `description`, `startLocation`, etc.
         // - legacy records that have a `content` string containing JSON
         const normalized = (data.items as any[]).map((item) => {
           if (!item) return item;
@@ -34,7 +38,11 @@ export default function App() {
               return {
                 ...item,
                 hours: parsed.hours ?? item.hours,
-                description: parsed.description ?? item.description,
+                purpose: parsed.purpose ?? parsed.description ?? item.purpose ?? item.description,
+                startLocation: parsed.startLocation ?? item.startLocation,
+                endLocation: parsed.endLocation ?? item.endLocation,
+                distanceMiles: parsed.distanceMiles ?? item.distanceMiles,
+                vehicleUsed: parsed.vehicleUsed ?? item.vehicleUsed,
               };
             } catch {
               return item;
@@ -51,25 +59,59 @@ export default function App() {
     listRecords();
   }, []);
 
+  function adjustNumberState(value: string, setter: (v: string) => void, delta: number) {
+    const parsed = parseFloat(value);
+    const base = Number.isNaN(parsed) ? 0 : parsed;
+    const next = Math.max(0, Math.round((base + delta) * 100) / 100);
+    setter(String(next));
+  }
+
   async function createRecord() {
-    const parsed = parseFloat(hours);
-    if (Number.isNaN(parsed) || parsed <= 0) {
+    const parsedHours = parseFloat(hours);
+    if (Number.isNaN(parsedHours) || parsedHours <= 0) {
       window.alert("Please enter a valid number of hours (> 0). Example: 1.5");
       return;
     }
-    if (!description.trim()) {
-      window.alert("Please enter a description.");
+    if (!purpose.trim()) {
+      window.alert("Please enter a purpose.");
+      return;
+    }
+    const parsedDistance = distanceMiles ? parseFloat(distanceMiles) : undefined;
+    if (distanceMiles && (Number.isNaN(parsedDistance!) || parsedDistance! < 0)) {
+      window.alert("Please enter a valid distance in miles (>= 0).");
       return;
     }
 
     try {
       // cast to any to avoid TS errors if the generated Schema type hasn't been updated
-      await client.models.Records.create({
-        hours: parsed,
-        description: description.trim(),
-      } as any);
+      const payload: any = {
+        hours: parsedHours,
+        purpose: purpose.trim(),
+        startLocation: startLocation.trim() || undefined,
+        endLocation: endLocation.trim() || undefined,
+        distanceMiles: parsedDistance !== undefined ? parsedDistance : undefined,
+        vehicleUsed: vehicleUsed.trim() || undefined,
+      };
+
+      // If backend hasn't been updated yet, fallback to legacy `content` storage:
+      // comment out the fallback once your API accepts these fields.
+      // payload.content = JSON.stringify({
+      //   hours: parsedHours,
+      //   description: description.trim(),
+      //   startLocation: startLocation.trim(),
+      //   endLocation: endLocation.trim(),
+      //   distanceMiles: parsedDistance,
+      //   vehicleUsed: vehicleUsed.trim(),
+      // });
+
+      await client.models.Records.create(payload);
+      // clear form
       setHours("");
-      setDescription("");
+      setPurpose("");
+      setStartLocation("");
+      setEndLocation("");
+      setDistanceMiles("");
+      setVehicleUsed("");
     } catch (err) {
       console.error("Failed to create record", err);
       window.alert("Failed to create record. See console for details.");
@@ -88,25 +130,101 @@ export default function App() {
       >
         <label>
           Hours (e.g., 1.5)
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <button
+              type="button"
+              aria-label="decrease hours"
+              onClick={() => adjustNumberState(hours, setHours, -0.25)}
+            >
+              −
+            </button>
+            <input
+              type="number"
+              step="0.25"
+              min="0"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              placeholder="1.5"
+              required
+              style={{ width: 100 }}
+            />
+            <button
+              type="button"
+              aria-label="increase hours"
+              onClick={() => adjustNumberState(hours, setHours, 0.25)}
+            >
+              +
+            </button>
+          </div>
+        </label>
+        <br />
+        <label>
+          Purpose
           <input
-            type="number"
-            step="0.25"
-            min="0"
-            value={hours}
-            onChange={(e) => setHours(e.target.value)}
-            placeholder="1.5"
+            type="text"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
+            placeholder="What was the task or purpose?"
             required
           />
         </label>
         <br />
         <label>
-          Description
+          Start Location
           <input
             type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="What did you work on?"
-            required
+            value={startLocation}
+            onChange={(e) => setStartLocation(e.target.value)}
+            placeholder="Start location"
+          />
+        </label>
+        <br />
+        <label>
+          End Location
+          <input
+            type="text"
+            value={endLocation}
+            onChange={(e) => setEndLocation(e.target.value)}
+            placeholder="End location"
+          />
+        </label>
+        <br />
+        <label>
+          Distance (miles)
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <button
+              type="button"
+              aria-label="decrease distance"
+              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, -0.1)}
+            >
+              −
+            </button>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={distanceMiles}
+              onChange={(e) => setDistanceMiles(e.target.value)}
+              placeholder="0.0"
+              style={{ width: 100 }}
+            />
+            <button
+              type="button"
+              aria-label="increase distance"
+              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, 0.1)}
+            >
+              +
+            </button>
+          </div>
+        </label>
+        <br />
+        <label>
+          Vehicle Used
+          <input
+            type="text"
+            value={vehicleUsed}
+            onChange={(e) => setVehicleUsed(e.target.value)}
+            placeholder="Car / Bike / Other"
           />
         </label>
         <br />
@@ -117,12 +235,22 @@ export default function App() {
         {records.map((rec: any) => (
           <li key={rec.id}>
             <div>
-              <strong>{rec.description ?? "No description"}</strong>
+              <strong>{rec.purpose ?? "No purpose"}</strong>
             </div>
             <div>
               {rec.hours !== undefined && rec.hours !== null ? `${Number(rec.hours)}h` : ""}
+              {rec.distanceMiles !== undefined && rec.distanceMiles !== null
+                ? ` — ${Number(rec.distanceMiles)} mi`
+                : ""}
+              {rec.vehicleUsed ? ` — ${rec.vehicleUsed}` : ""}
               {rec.createdAt ? ` — ${new Date(rec.createdAt).toLocaleString()}` : ""}
             </div>
+            {(rec.startLocation || rec.endLocation) && (
+              <div>
+                {rec.startLocation ? `From: ${rec.startLocation}` : ""}
+                {rec.endLocation ? ` — To: ${rec.endLocation}` : ""}
+              </div>
+            )}
           </li>
         ))}
       </ul>

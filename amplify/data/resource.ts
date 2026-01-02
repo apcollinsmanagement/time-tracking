@@ -10,7 +10,11 @@ const schema = a.schema({
   Records: a
     .model({
       hours: a.float(),
-      description: a.string(),
+      purpose: a.string(),
+      startLocation: a.string(),
+      endLocation: a.string(),
+      distanceMiles: a.float(),
+      vehicleUsed: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 });
