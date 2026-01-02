@@ -16,10 +16,6 @@ export default function App() {
   const [records, setRecords] = useState<Array<any>>([]);
   const [hours, setHours] = useState<string>("");
   const [purpose, setPurpose] = useState<string>("");
-  const [startLocation, setStartLocation] = useState<string>("");
-  const [startLocationOption, setStartLocationOption] = useState<string>("");
-  const [endLocationOption, setEndLocationOption] = useState<string>("");
-  const [endLocation, setEndLocation] = useState<string>("");
   const [distanceMiles, setDistanceMiles] = useState<string>("");
   const [vehicleUsed, setVehicleUsed] = useState<string>("");
 
@@ -35,8 +31,6 @@ export default function App() {
                 ...item,
                 hours: parsed.hours ?? item.hours,
                 purpose: parsed.purpose ?? parsed.description ?? item.purpose ?? item.description,
-                startLocation: parsed.startLocation ?? item.startLocation,
-                endLocation: parsed.endLocation ?? item.endLocation,
                 distanceMiles: parsed.distanceMiles ?? item.distanceMiles,
                 vehicleUsed: parsed.vehicleUsed ?? item.vehicleUsed,
               };
@@ -82,8 +76,6 @@ export default function App() {
       const payload: any = {
         hours: parsedHours,
         purpose: purpose.trim(),
-        startLocation: startLocation.trim() || undefined,
-        endLocation: endLocation.trim() || undefined,
         distanceMiles: parsedDistance !== undefined ? parsedDistance : undefined,
         vehicleUsed: vehicleUsed.trim() || undefined,
       };
@@ -91,8 +83,6 @@ export default function App() {
       await client.models.Records.create(payload);
       setHours("");
       setPurpose("");
-      setStartLocation("");
-      setEndLocation("");
       setDistanceMiles("");
       setVehicleUsed("");
     } catch (err) {
@@ -215,12 +205,6 @@ export default function App() {
               {rec.vehicleUsed ? ` — ${rec.vehicleUsed}` : ""}
               {rec.createdAt ? ` — ${new Date(rec.createdAt).toLocaleString()}` : ""}
             </div>
-            {(rec.startLocation || rec.endLocation) && (
-              <div>
-                {rec.startLocation ? `From: ${rec.startLocation}` : ""}
-                {rec.endLocation ? ` — To: ${rec.endLocation}` : ""}
-              </div>
-            )}
           </li>
         ))}
       </ul>

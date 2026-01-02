@@ -11,8 +11,6 @@ const schema = a.schema({
     .model({
       hours: a.float(),
       purpose: a.string(),
-      startLocation: a.string(),
-      endLocation: a.string(),
       distanceMiles: a.float(),
       vehicleUsed: a.string(),
     })
