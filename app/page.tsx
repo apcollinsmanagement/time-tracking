@@ -13,38 +13,97 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [records, setRecords] = useState<Array<Schema["Records"]["type"]>>(
+    []
+  );
+  const [hours, setHours] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
 
-  function listTodos() {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
+  function listRecords() {
+    client.models.Records.observeQuery().subscribe({
+      next: (data) => setRecords([...data.items]),
     });
   }
 
   useEffect(() => {
-    listTodos();
+    listRecords();
   }, []);
 
-  function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
-    });
+  async function createRecord() {
+    const parsed = parseFloat(hours);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+      window.alert("Please enter a valid number of hours (> 0). Example: 1.5");
+      return;
+    }
+    if (!description.trim()) {
+      window.alert("Please enter a description.");
+      return;
+    }
+
+    try {
+      await client.models.Records.create({
+        hours: parsed,
+        description: description.trim(),
+      });
+      setHours("");
+      setDescription("");
+    } catch (err) {
+      console.error("Failed to create record", err);
+      window.alert("Failed to create record. See console for details.");
+    }
   }
 
   return (
     <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
+      <h1>Time Records</h1>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          createRecord();
+        }}
+      >
+        <label>
+          Hours (e.g., 1.5)
+          <input
+            type="number"
+            step="0.25"
+            min="0"
+            value={hours}
+            onChange={(e) => setHours(e.target.value)}
+            placeholder="1.5"
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Description
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What did you work on?"
+            required
+          />
+        </label>
+        <br />
+        <button type="submit">Add record</button>
+      </form>
+
       <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
+        {records.map((rec) => (
+          <li key={rec.id}>
+            {typeof rec.hours === "number" ? rec.hours : Number(rec.hours)}h —{" "}
+            {rec.description}
+          </li>
         ))}
       </ul>
+
       <div>
-        🥳 App successfully hosted. Try creating a new todo.
+        🥳 App successfully hosted. Add time records above.
         <br />
-        <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
-          Review next steps of this tutorial.
+        <a href="https://docs.amplify.aws/">
+          Amplify docs
         </a>
       </div>
     </main>
