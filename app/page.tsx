@@ -22,7 +22,28 @@ export default function App() {
 
   function listRecords() {
     client.models.Records.observeQuery().subscribe({
-      next: (data) => setRecords([...((data.items as unknown) as any[])]),
+      next: (data) => {
+        // normalize items so we support both:
+        // - new schema with `hours` and `description`
+        // - legacy records that have a `content` string containing JSON
+        const normalized = (data.items as any[]).map((item) => {
+          if (!item) return item;
+          if (item.content && typeof item.content === "string") {
+            try {
+              const parsed = JSON.parse(item.content);
+              return {
+                ...item,
+                hours: parsed.hours ?? item.hours,
+                description: parsed.description ?? item.description,
+              };
+            } catch {
+              return item;
+            }
+          }
+          return item;
+        });
+        setRecords([...normalized]);
+      },
     });
   }
 
@@ -95,21 +116,16 @@ export default function App() {
       <ul>
         {records.map((rec: any) => (
           <li key={rec.id}>
-            {typeof rec.hours === "number"
-              ? rec.hours
-              : Number(rec.hours)
-              ? Number(rec.hours)
-              : ""}
-            h — {rec.description}
+            <div>
+              <strong>{rec.description ?? "No description"}</strong>
+            </div>
+            <div>
+              {rec.hours !== undefined && rec.hours !== null ? `${Number(rec.hours)}h` : ""}
+              {rec.createdAt ? ` — ${new Date(rec.createdAt).toLocaleString()}` : ""}
+            </div>
           </li>
         ))}
       </ul>
-
-      <div>
-        🥳 App successfully hosted. Add time records above.
-        <br />
-        <a href="https://docs.amplify.aws/">Amplify docs</a>
-      </div>
     </main>
   );
 }
