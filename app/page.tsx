@@ -13,9 +13,6 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-  // use `any` here to avoid type mismatch while the generated Schema may still
-  // include the old todo model. Once your amplify codegen is updated you can
-  // switch back to the generated types.
   const [records, setRecords] = useState<Array<any>>([]);
   const [hours, setHours] = useState<string>("");
   const [purpose, setPurpose] = useState<string>("");
@@ -29,9 +26,6 @@ export default function App() {
   function listRecords() {
     client.models.Records.observeQuery().subscribe({
       next: (data) => {
-        // normalize items so we support both:
-        // - new schema with `hours`, `description`, `startLocation`, etc.
-        // - legacy records that have a `content` string containing JSON
         const normalized = (data.items as any[]).map((item) => {
           if (!item) return item;
           if (item.content && typeof item.content === "string") {
@@ -85,7 +79,6 @@ export default function App() {
     }
 
     try {
-      // cast to any to avoid TS errors if the generated Schema type hasn't been updated
       const payload: any = {
         hours: parsedHours,
         purpose: purpose.trim(),
@@ -95,19 +88,7 @@ export default function App() {
         vehicleUsed: vehicleUsed.trim() || undefined,
       };
 
-      // If backend hasn't been updated yet, fallback to legacy `content` storage:
-      // comment out the fallback once your API accepts these fields.
-      // payload.content = JSON.stringify({
-      //   hours: parsedHours,
-      //   description: description.trim(),
-      //   startLocation: startLocation.trim(),
-      //   endLocation: endLocation.trim(),
-      //   distanceMiles: parsedDistance,
-      //   vehicleUsed: vehicleUsed.trim(),
-      // });
-
       await client.models.Records.create(payload);
-      // clear form
       setHours("");
       setPurpose("");
       setStartLocation("");
@@ -130,9 +111,9 @@ export default function App() {
           createRecord();
         }}
       >
-        <label>
-          Hours (e.g., 1.5)
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Hours (e.g., 1.5)</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
             <button
               type="button"
               aria-label="decrease hours"
@@ -158,113 +139,23 @@ export default function App() {
               +
             </button>
           </div>
-        </label>
-        <br />
-        <label>
-          Purpose
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Purpose</label>
           <input
             type="text"
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
             placeholder="What was the task?"
             required
+            style={{ marginTop: 8, width: "100%", maxWidth: 560 }}
           />
-        </label>
-        <br />
-        <label>
-          Start Location
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <select
-              value={startLocationOption}
-              onChange={(e) => {
-                const v = e.target.value;
-                setStartLocationOption(v);
-                if (v === "home") {
-                  setStartLocation("6110 Misty Creek Drive Loveland OH 45140");
-                } else if (v === "custom") {
-                  setStartLocation("");
-                } else {
-                  setStartLocation("");
-                }
-              }}
-              style={{ minWidth: 180 }}
-            >
-              <option value="">Select location</option>
-              <option value="home">Home</option>
-              <option value="custom">Other (custom)</option>
-            </select>
+        </div>
 
-            {startLocationOption === "custom" && (
-              <input
-                type="text"
-                value={startLocation}
-                onChange={(e) => setStartLocation(e.target.value)}
-                placeholder="Enter custom start location"
-                style={{ minWidth: 240 }}
-              />
-            )}
-
-            {startLocationOption === "home" && (
-              <input
-                type="text"
-                value={startLocation}
-                readOnly
-                style={{ minWidth: 240 }}
-              />
-            )}
-          </div>
-        </label>
-        <br />
-        <label>
-          End Location
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <select
-              value={endLocationOption}
-              onChange={(e) => {
-                const v = e.target.value;
-                setEndLocationOption(v);
-                if (v === "home") {
-                  setEndLocation("6110 Misty Creek Drive Loveland OH 45140");
-                } else if (v === "girard") {
-                  setEndLocation("6317 Girard Ave Cincinnati OH 45213");
-                } else if (v === "custom") {
-                  setEndLocation("");
-                } else {
-                  setEndLocation("");
-                }
-              }}
-              style={{ minWidth: 220 }}
-            >
-              <option value="">Select location</option>
-              <option value="home">Home</option>
-              <option value="girard">Girard</option>
-              <option value="custom">Other (custom)</option>
-            </select>
-
-            {endLocationOption === "custom" && (
-              <input
-                type="text"
-                value={endLocation}
-                onChange={(e) => setEndLocation(e.target.value)}
-                placeholder="Enter custom end location"
-                style={{ minWidth: 240 }}
-              />
-            )}
-
-            {(endLocationOption === "home" || endLocationOption === "girard") && (
-              <input
-                type="text"
-                value={endLocation}
-                readOnly
-                style={{ minWidth: 240 }}
-              />
-            )}
-          </div>
-        </label>
-        <br />
-        <label>
-          Distance (miles)
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Distance (miles)</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
             <button
               type="button"
               aria-label="decrease distance"
@@ -289,28 +180,30 @@ export default function App() {
               +
             </button>
           </div>
-        </label>
-        <br />
-        <label>
-          Vehicle Used
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Vehicle Used</label>
           <select
             value={vehicleUsed}
             onChange={(e) => setVehicleUsed(e.target.value)}
             required
-            style={{ minWidth: 180 }}
+            style={{ marginTop: 8, minWidth: 220 }}
           >
             <option value="">Select vehicle</option>
             <option value="Kia Telluride">Kia Telluride</option>
             <option value="Ford Focus">Ford Focus</option>
           </select>
-        </label>
-        <br />
-        <button type="submit">Add record</button>
+        </div>
+
+        <button type="submit" style={{ marginTop: 6 }}>
+          Add record
+        </button>
       </form>
 
-      <ul>
+      <ul style={{ marginTop: 20 }}>
         {records.map((rec: any) => (
-          <li key={rec.id}>
+          <li key={rec.id} style={{ marginBottom: 12 }}>
             <div>
               <strong>{rec.purpose ?? "No purpose"}</strong>
             </div>
