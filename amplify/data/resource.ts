@@ -13,6 +13,7 @@ const schema = a.schema({
       purpose: a.string(),
       distanceMiles: a.float(),
       vehicleUsed: a.string(),
+      date: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 });

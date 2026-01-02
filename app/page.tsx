@@ -16,6 +16,7 @@ export default function App() {
   const [records, setRecords] = useState<Array<any>>([]);
   const [hours, setHours] = useState<string>("");
   const [purpose, setPurpose] = useState<string>("");
+  const [date, setDate] = useState<string>(""); // MM/DD/YY
   const [distanceMiles, setDistanceMiles] = useState<string>("");
   const [vehicleUsed, setVehicleUsed] = useState<string>("");
 
@@ -30,15 +31,19 @@ export default function App() {
               return {
                 ...item,
                 hours: parsed.hours ?? item.hours,
-                purpose: parsed.purpose ?? parsed.description ?? item.purpose ?? item.description,
+                purpose: parsed.purpose ?? item.purpose,
                 distanceMiles: parsed.distanceMiles ?? item.distanceMiles,
                 vehicleUsed: parsed.vehicleUsed ?? item.vehicleUsed,
+                date: parsed.date ?? item.date,
               };
             } catch {
               return item;
             }
           }
-          return item;
+          return {
+            ...item,
+            date: item.date ?? undefined,
+          };
         });
         setRecords([...normalized]);
       },
@@ -56,6 +61,27 @@ export default function App() {
     setter(String(next));
   }
 
+  function formatTodayMMDDYY(): string {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yy = String(d.getFullYear() % 100).padStart(2, "0");
+    return `${mm}/${dd}/${yy}`;
+  }
+
+  function isValidMMDDYY(s: string): boolean {
+    if (!/^\d{2}\/\d{2}\/\d{2}$/.test(s)) return false;
+    const [mmStr, ddStr, yyStr] = s.split("/");
+    const mm = Number(mmStr);
+    const dd = Number(ddStr);
+    const yy = Number(yyStr);
+    const year = 2000 + yy;
+    if (mm < 1 || mm > 12) return false;
+    // construct and compare to ensure valid day for month
+    const dt = new Date(year, mm - 1, dd);
+    return dt.getFullYear() === year && dt.getMonth() === mm - 1 && dt.getDate() === dd;
+  }
+
   async function createRecord() {
     const parsedHours = parseFloat(hours);
     if (Number.isNaN(parsedHours) || parsedHours <= 0) {
@@ -64,6 +90,10 @@ export default function App() {
     }
     if (!purpose.trim()) {
       window.alert("Please enter a purpose.");
+      return;
+    }
+    if (!isValidMMDDYY(date)) {
+      window.alert("Please enter a valid date in MM/DD/YY format (example: 01/02/26).");
       return;
     }
     const parsedDistance = distanceMiles ? parseFloat(distanceMiles) : undefined;
@@ -76,13 +106,26 @@ export default function App() {
       const payload: any = {
         hours: parsedHours,
         purpose: purpose.trim(),
+        date: date,
         distanceMiles: parsedDistance !== undefined ? parsedDistance : undefined,
         vehicleUsed: vehicleUsed.trim() || undefined,
       };
 
+      // Fallback for APIs that still expect `content` or older schema:
+      // include a JSON string in content so existing backend accepts the data.
+      // Remove/comment this line after your backend schema supports `date`, `purpose`, etc.
+      payload.content = JSON.stringify({
+        hours: parsedHours,
+        purpose: purpose.trim(),
+        date,
+        distanceMiles: parsedDistance,
+        vehicleUsed: vehicleUsed.trim(),
+      });
+
       await client.models.Records.create(payload);
       setHours("");
       setPurpose("");
+      setDate("");
       setDistanceMiles("");
       setVehicleUsed("");
     } catch (err) {
@@ -144,6 +187,26 @@ export default function App() {
         </div>
 
         <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Date (MM/DD/YY)</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+            <input
+              type="text"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              placeholder="MM/DD/YY"
+              style={{ width: 140 }}
+            />
+            <button
+              type="button"
+              onClick={() => setDate(formatTodayMMDDYY())}
+              aria-label="set today"
+            >
+              Today
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
           <label style={{ display: "block", fontWeight: 600 }}>Distance (miles)</label>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
             <button
@@ -199,6 +262,7 @@ export default function App() {
             </div>
             <div>
               {rec.hours !== undefined && rec.hours !== null ? `${Number(rec.hours)}h` : ""}
+              {rec.date ? ` — ${rec.date}` : ""}
               {rec.distanceMiles !== undefined && rec.distanceMiles !== null
                 ? ` — ${Number(rec.distanceMiles)} mi`
                 : ""}
