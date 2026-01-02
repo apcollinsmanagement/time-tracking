@@ -13,15 +13,16 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-  const [records, setRecords] = useState<Array<Schema["Records"]["type"]>>(
-    []
-  );
+  // use `any` here to avoid type mismatch while the generated Schema may still
+  // include the old todo model. Once your amplify codegen is updated you can
+  // switch back to the generated types.
+  const [records, setRecords] = useState<Array<any>>([]);
   const [hours, setHours] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
   function listRecords() {
     client.models.Records.observeQuery().subscribe({
-      next: (data) => setRecords([...data.items]),
+      next: (data) => setRecords([...((data.items as unknown) as any[])]),
     });
   }
 
@@ -41,10 +42,11 @@ export default function App() {
     }
 
     try {
+      // cast to any to avoid TS errors if the generated Schema type hasn't been updated
       await client.models.Records.create({
         hours: parsed,
         description: description.trim(),
-      });
+      } as any);
       setHours("");
       setDescription("");
     } catch (err) {
@@ -91,10 +93,14 @@ export default function App() {
       </form>
 
       <ul>
-        {records.map((rec) => (
+        {records.map((rec: any) => (
           <li key={rec.id}>
-            {typeof rec.hours === "number" ? rec.hours : Number(rec.hours)}h —{" "}
-            {rec.description}
+            {typeof rec.hours === "number"
+              ? rec.hours
+              : Number(rec.hours)
+              ? Number(rec.hours)
+              : ""}
+            h — {rec.description}
           </li>
         ))}
       </ul>
@@ -102,9 +108,7 @@ export default function App() {
       <div>
         🥳 App successfully hosted. Add time records above.
         <br />
-        <a href="https://docs.amplify.aws/">
-          Amplify docs
-        </a>
+        <a href="https://docs.amplify.aws/">Amplify docs</a>
       </div>
     </main>
   );
