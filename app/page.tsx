@@ -119,9 +119,14 @@ export default function App() {
     }
   }
 
+  function truncate(s?: string, n = 25) {
+    if (!s) return "—";
+    return s.length > n ? s.slice(0, n - 1) + "…" : s;
+  }
+
   return (
     <main>
-      <h1>Task Tracker</h1>
+      {/* <h1>Task Tracker</h1> */}
 
       <form
         onSubmit={(e) => {
@@ -129,6 +134,39 @@ export default function App() {
           createRecord();
         }}
       >
+        {/* reordered inputs: date, purpose, hours, vehicle, distance, submit */}
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Date (MM/DD/YY)</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+            <input
+              type="text"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              placeholder="MM/DD/YY"
+              style={{ width: 140 }}
+            />
+            <button
+              type="button"
+              onClick={() => setDate(formatTodayMMDDYY())}
+              aria-label="set today"
+            >
+              Today
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Purpose</label>
+          <input
+            type="text"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
+            placeholder="What was the task?"
+            required
+            style={{ marginTop: 8, width: "100%", maxWidth: 560 }}
+          />
+        </div>
+
         <div style={{ marginBottom: 18 }}>
           <label style={{ display: "block", fontWeight: 600 }}>Hours (e.g., 1.5)</label>
           <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
@@ -153,67 +191,6 @@ export default function App() {
               type="button"
               aria-label="increase hours"
               onClick={() => adjustNumberState(hours, setHours, 0.25)}
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Purpose</label>
-          <input
-            type="text"
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            placeholder="What was the task?"
-            required
-            style={{ marginTop: 8, width: "100%", maxWidth: 560 }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Date (MM/DD/YY)</label>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-            <input
-              type="text"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              placeholder="MM/DD/YY"
-              style={{ width: 140 }}
-            />
-            <button
-              type="button"
-              onClick={() => setDate(formatTodayMMDDYY())}
-              aria-label="set today"
-            >
-              Today
-            </button>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Distance (miles)</label>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-            <button
-              type="button"
-              aria-label="decrease distance"
-              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, -0.1)}
-            >
-              −
-            </button>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={distanceMiles}
-              onChange={(e) => setDistanceMiles(e.target.value)}
-              placeholder="0.0"
-              style={{ width: 100 }}
-            />
-            <button
-              type="button"
-              aria-label="increase distance"
-              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, 0.1)}
             >
               +
             </button>
@@ -273,6 +250,35 @@ export default function App() {
           </div>
         </div>
 
+        <div style={{ marginBottom: 18 }}>
+          <label style={{ display: "block", fontWeight: 600 }}>Distance (miles)</label>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+            <button
+              type="button"
+              aria-label="decrease distance"
+              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, -0.1)}
+            >
+              −
+            </button>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={distanceMiles}
+              onChange={(e) => setDistanceMiles(e.target.value)}
+              placeholder="0.0"
+              style={{ width: 100 }}
+            />
+            <button
+              type="button"
+              aria-label="increase distance"
+              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, 0.1)}
+            >
+              +
+            </button>
+          </div>
+        </div>
+
         <button type="submit" style={{ marginTop: 6 }}>
           Add record
         </button>
@@ -295,12 +301,11 @@ export default function App() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead style={{ position: "sticky", top: 0, background: "#fafafa", zIndex: 1 }}>
                 <tr>
-                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Date</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee", width: 110 }}>Date</th>
                   <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Purpose</th>
-                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Hours</th>
-                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Miles</th>
-                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Vehicle</th>
-                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Created</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee", width: 80 }}>Hours</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee", width: 90 }}>Miles</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee", width: 160 }}>Vehicle</th>
                 </tr>
               </thead>
               <tbody>
@@ -317,7 +322,7 @@ export default function App() {
                         {rec.date ?? "—"}
                       </td>
                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2" }}>
-                        <div style={{ fontWeight: 600 }}>{rec.purpose ?? "—"}</div>
+                        <div style={{ fontWeight: 600 }}>{truncate(rec.purpose, 25)}</div>
                       </td>
                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 80 }}>
                         {rec.hours !== undefined && rec.hours !== null ? Number(rec.hours).toFixed(2) : "—"}
@@ -327,9 +332,6 @@ export default function App() {
                       </td>
                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 160 }}>
                         {rec.vehicleUsed ?? "—"}
-                      </td>
-                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 190 }}>
-                        {rec.createdAt ? new Date(rec.createdAt).toLocaleString() : "—"}
                       </td>
                     </tr>
                   ))}
