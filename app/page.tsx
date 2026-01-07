@@ -19,6 +19,8 @@ export default function App() {
   const [date, setDate] = useState<string>(""); // MM/DD/YY
   const [distanceMiles, setDistanceMiles] = useState<string>("");
   const [vehicleUsed, setVehicleUsed] = useState<string>("");
+  const [vehicleEnabled, setVehicleEnabled] = useState<boolean>(false);
+  const [vehicleCustom, setVehicleCustom] = useState<string>("");
 
   function listRecords() {
     client.models.Records.observeQuery().subscribe({
@@ -93,8 +95,15 @@ export default function App() {
         purpose: purpose.trim(),
         date: date,
         distanceMiles: parsedDistance !== undefined ? parsedDistance : undefined,
-        vehicleUsed: vehicleUsed.trim() || undefined,
       };
+
+      // attach vehicle only if user enabled and selected/entered one
+      if (vehicleEnabled) {
+        const v = vehicleUsed === "other" ? vehicleCustom.trim() : vehicleUsed;
+        if (v && v.length > 0) {
+          payload.vehicleUsed = v;
+        }
+      }
 
       await client.models.Records.create(payload);
       setHours("");
@@ -102,6 +111,8 @@ export default function App() {
       setDate("");
       setDistanceMiles("");
       setVehicleUsed("");
+      setVehicleCustom("");
+      setVehicleEnabled(false);
     } catch (err) {
       console.error("Failed to create record", err);
       window.alert("Failed to create record. See console for details.");
@@ -110,7 +121,7 @@ export default function App() {
 
   return (
     <main>
-      <h1>Time Records</h1>
+      <h1>Task Tracker</h1>
 
       <form
         onSubmit={(e) => {
@@ -134,7 +145,7 @@ export default function App() {
               min="0"
               value={hours}
               onChange={(e) => setHours(e.target.value)}
-              placeholder="1.5"
+              placeholder="Add Hours"
               required
               style={{ width: 100 }}
             />
@@ -210,17 +221,54 @@ export default function App() {
         </div>
 
         <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Vehicle Used</label>
-          <select
-            value={vehicleUsed}
-            onChange={(e) => setVehicleUsed(e.target.value)}
-            required
-            style={{ marginTop: 8, minWidth: 220 }}
-          >
-            <option value="">Select vehicle</option>
-            <option value="Kia Telluride">Kia Telluride</option>
-            <option value="Ford Focus">Ford Focus</option>
-          </select>
+          <label style={{ display: "block", fontWeight: 600 }}>Vehicle (optional)</label>
+          <div style={{ marginTop: 8, display: "flex", gap: 12, alignItems: "center" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setVehicleEnabled((v) => !v);
+                if (vehicleEnabled) {
+                  setVehicleUsed("");
+                  setVehicleCustom("");
+                }
+              }}
+              aria-pressed={vehicleEnabled}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: "1px solid #ccc",
+                background: vehicleEnabled ? "#eee" : "white",
+                cursor: "pointer",
+              }}
+            >
+              {vehicleEnabled ? "Remove vehicle" : "Add vehicle"}
+            </button>
+
+            {vehicleEnabled && (
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <select
+                  value={vehicleUsed}
+                  onChange={(e) => setVehicleUsed(e.target.value)}
+                  style={{ minWidth: 220 }}
+                >
+                  <option value="">Select vehicle</option>
+                  <option value="Kia Telluride">Kia Telluride</option>
+                  <option value="Ford Focus">Ford Focus</option>
+                  <option value="other">Other (custom)</option>
+                </select>
+
+                {vehicleUsed === "other" && (
+                  <input
+                    type="text"
+                    value={vehicleCustom}
+                    onChange={(e) => setVehicleCustom(e.target.value)}
+                    placeholder="Describe vehicle"
+                    style={{ minWidth: 200 }}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <button type="submit" style={{ marginTop: 6 }}>
@@ -228,23 +276,66 @@ export default function App() {
         </button>
       </form>
 
-      <ul style={{ marginTop: 20 }}>
-        {records.map((rec: any) => (
-          <li key={rec.id} style={{ marginBottom: 12 }}>
-            <div>
-              <strong>{rec.purpose ?? "No purpose"}</strong>
-            </div>
-            <div>
-              {rec.hours !== undefined && rec.hours !== null ? `${Number(rec.hours)}h` : ""}
-              {rec.date ? ` — ${rec.date}` : ""}
-              {rec.distanceMiles !== undefined && rec.distanceMiles !== null
-                ? ` — ${Number(rec.distanceMiles)} mi`
-                : ""}
-              {rec.vehicleUsed ? ` — ${rec.vehicleUsed}` : ""}
-            </div>
-          </li>
-        ))}
-      </ul>
+      {/* Records table */}
+      <div style={{ marginTop: 20 }}>
+        {records.length === 0 ? (
+          <div>No records</div>
+        ) : (
+          <div
+            style={{
+              maxHeight: 360,
+              overflowY: "auto",
+              border: "1px solid #e6e6e6",
+              borderRadius: 8,
+              padding: 0,
+            }}
+          >
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead style={{ position: "sticky", top: 0, background: "#fafafa", zIndex: 1 }}>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Date</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Purpose</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Hours</th>
+                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Miles</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Vehicle</th>
+                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records
+                  .slice()
+                  .sort((a: any, b: any) => {
+                    const da = new Date(a.createdAt || 0).getTime();
+                    const db = new Date(b.createdAt || 0).getTime();
+                    return db - da;
+                  })
+                  .map((rec: any) => (
+                    <tr key={rec.id}>
+                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 110 }}>
+                        {rec.date ?? "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2" }}>
+                        <div style={{ fontWeight: 600 }}>{rec.purpose ?? "—"}</div>
+                      </td>
+                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 80 }}>
+                        {rec.hours !== undefined && rec.hours !== null ? Number(rec.hours).toFixed(2) : "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 90 }}>
+                        {rec.distanceMiles !== undefined && rec.distanceMiles !== null ? Number(rec.distanceMiles).toFixed(1) : "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 160 }}>
+                        {rec.vehicleUsed ?? "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 190 }}>
+                        {rec.createdAt ? new Date(rec.createdAt).toLocaleString() : "—"}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </main>
   );
 }
