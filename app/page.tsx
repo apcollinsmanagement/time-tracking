@@ -236,9 +236,11 @@ export default function App() {
               style={{
                 padding: "6px 10px",
                 borderRadius: 6,
-                border: "1px solid #ccc",
-                background: vehicleEnabled ? "#eee" : "white",
+                border: vehicleEnabled ? "1px solid #0b67d0" : "1px solid #ccc",
+                background: vehicleEnabled ? "#0b67d0" : "#ffffff",
+                color: vehicleEnabled ? "#ffffff" : "#111111",
                 cursor: "pointer",
+                transition: "background 120ms ease, color 120ms ease",
               }}
             >
               {vehicleEnabled ? "Remove vehicle" : "Add vehicle"}
