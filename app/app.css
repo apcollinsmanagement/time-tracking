@@ -63,3 +63,40 @@ body {
     font-weight: 800;
     text-decoration: none;
   }
+  
+  /* Responsive form & table improvements */
+  
+  /* form helpers */
+  .form-row { margin-bottom: 18px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .input-compact { width: 140px; padding: 6px 8px; }
+  .input-full { width: 100%; padding: 8px 10px; max-width: 560px; }
+  .btn-compact { padding: 6px 10px; }
+  .btn-submit { padding: 8px 12px; }
+  
+  /* table wrapper makes table horizontally scrollable on small screens */
+  .table-wrapper { max-height: 360px; overflow: auto; padding: 0; }
+  
+  /* make purpose column truncate with ellipsis */
+  .purpose-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  /* smaller paddings for compact display */
+  .records-table th, .records-table td { padding: 8px 10px; }
+  
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    .row { flex-direction: column; align-items: stretch; }
+    .input-compact { width: 100%; }
+    .input-full { width: 100%; }
+    .btn-compact { width: 100%; }
+    .btn-submit { width: 100%; }
+  
+    /* allow horizontal scroll for the table instead of squishing content */
+    .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  
+    /* reduce column widths to fit better on mobile when possible */
+    .records-table th:nth-child(1), .records-table td:nth-child(1) { width: 90px; }
+    .records-table th:nth-child(3), .records-table td:nth-child(3) { width: 70px; text-align: right; }
+    .records-table th:nth-child(4), .records-table td:nth-child(4) { width: 70px; text-align: right; }
+    .records-table th:nth-child(5), .records-table td:nth-child(5) { width: 120px; }
+  }

@@ -135,211 +135,203 @@ export default function App() {
         }}
       >
         {/* reordered inputs: date, purpose, hours, vehicle, distance, submit */}
-        <div style={{ marginBottom: 18 }}>
+        <div className="form-row">
           <label style={{ display: "block", fontWeight: 600 }}>Date (MM/DD/YY)</label>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
+          <div className="row" style={{ marginTop: 8 }}>
             <input
               type="text"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               placeholder="MM/DD/YY"
-              style={{ width: 140 }}
+              className="input-compact"
             />
-            <button
-              type="button"
-              onClick={() => setDate(formatTodayMMDDYY())}
-              aria-label="set today"
-            >
+            <button type="button" onClick={() => setDate(formatTodayMMDDYY())} aria-label="set today" className="btn-compact">
               Today
             </button>
           </div>
         </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Purpose</label>
-          <input
-            type="text"
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            placeholder="What was the task?"
-            required
-            style={{ marginTop: 8, width: "100%", maxWidth: 560 }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Hours (e.g., 1.5)</label>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-            <button
-              type="button"
-              aria-label="decrease hours"
-              onClick={() => adjustNumberState(hours, setHours, -0.25)}
-            >
-              −
-            </button>
+        <div className="form-row">
+           <label style={{ display: "block", fontWeight: 600 }}>Purpose</label>
+          <div className="row" style={{ marginTop: 8 }}>
             <input
-              type="number"
-              step="0.25"
-              min="0"
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              placeholder="Add Hours"
+              type="text"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              placeholder="What was the task?"
               required
-              style={{ width: 100 }}
+              className="input-full"
             />
-            <button
-              type="button"
-              aria-label="increase hours"
-              onClick={() => adjustNumberState(hours, setHours, 0.25)}
-            >
-              +
-            </button>
           </div>
         </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Vehicle (optional)</label>
-          <div style={{ marginTop: 8, display: "flex", gap: 12, alignItems: "center" }}>
-            <button
-              type="button"
-              onClick={() => {
-                setVehicleEnabled((v) => !v);
-                if (vehicleEnabled) {
-                  setVehicleUsed("");
-                  setVehicleCustom("");
-                }
-              }}
-              aria-pressed={vehicleEnabled}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: vehicleEnabled ? "1px solid #0b67d0" : "1px solid #ccc",
-                background: vehicleEnabled ? "#0b67d0" : "#ffffff",
-                color: vehicleEnabled ? "#ffffff" : "#111111",
-                cursor: "pointer",
-                transition: "background 120ms ease, color 120ms ease",
-              }}
-            >
-              {vehicleEnabled ? "Remove vehicle" : "Add vehicle"}
-            </button>
-
-            {vehicleEnabled && (
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <select
-                  value={vehicleUsed}
-                  onChange={(e) => setVehicleUsed(e.target.value)}
-                  style={{ minWidth: 220 }}
-                >
-                  <option value="">Select vehicle</option>
-                  <option value="Kia Telluride">Kia Telluride</option>
-                  <option value="Ford Focus">Ford Focus</option>
-                  <option value="other">Other (custom)</option>
-                </select>
-
-                {vehicleUsed === "other" && (
-                  <input
-                    type="text"
-                    value={vehicleCustom}
-                    onChange={(e) => setVehicleCustom(e.target.value)}
-                    placeholder="Describe vehicle"
-                    style={{ minWidth: 200 }}
-                  />
-                )}
-              </div>
-            )}
-          </div>
+        <div className="form-row">
+           <label style={{ display: "block", fontWeight: 600 }}>Hours (e.g., 1.5)</label>
+          <div className="row" style={{ marginTop: 8 }}>
+             <button
+               type="button"
+               aria-label="decrease hours"
+               onClick={() => adjustNumberState(hours, setHours, -0.25)}
+             >
+               −
+             </button>
+             <input
+               type="number"
+               step="0.25"
+               min="0"
+               value={hours}
+               onChange={(e) => setHours(e.target.value)}
+               placeholder="Add Hours"
+               required
+              className="input-compact"
+             />
+             <button
+               type="button"
+               aria-label="increase hours"
+               onClick={() => adjustNumberState(hours, setHours, 0.25)}
+             >
+               +
+             </button>
+           </div>
         </div>
 
-        <div style={{ marginBottom: 18 }}>
-          <label style={{ display: "block", fontWeight: 600 }}>Distance (miles)</label>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
-            <button
-              type="button"
-              aria-label="decrease distance"
-              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, -0.1)}
-            >
-              −
-            </button>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={distanceMiles}
-              onChange={(e) => setDistanceMiles(e.target.value)}
-              placeholder="0.0"
-              style={{ width: 100 }}
-            />
-            <button
-              type="button"
-              aria-label="increase distance"
-              onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, 0.1)}
-            >
-              +
-            </button>
-          </div>
+        <div className="form-row">
+           <label style={{ display: "block", fontWeight: 600 }}>Vehicle (optional)</label>
+          <div className="row" style={{ marginTop: 8 }}>
+             <button
+               type="button"
+               onClick={() => {
+                 setVehicleEnabled((v) => !v);
+                 if (vehicleEnabled) {
+                   setVehicleUsed("");
+                   setVehicleCustom("");
+                 }
+               }}
+               aria-pressed={vehicleEnabled}
+               style={{
+                 padding: "6px 10px",
+                 borderRadius: 6,
+                 border: vehicleEnabled ? "1px solid #0b67d0" : "1px solid #ccc",
+                 background: vehicleEnabled ? "#0b67d0" : "#ffffff",
+                 color: vehicleEnabled ? "#ffffff" : "#111111",
+                 cursor: "pointer",
+                 transition: "background 120ms ease, color 120ms ease",
+               }}
+             >
+               {vehicleEnabled ? "Remove vehicle" : "Add vehicle"}
+             </button>
+ 
+             {vehicleEnabled && (
+               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                 <select
+                   value={vehicleUsed}
+                   onChange={(e) => setVehicleUsed(e.target.value)}
+                  className="input-compact"
+                 >
+                   <option value="">Select vehicle</option>
+                   <option value="Kia Telluride">Kia Telluride</option>
+                   <option value="Ford Focus">Ford Focus</option>
+                   <option value="other">Other (custom)</option>
+                 </select>
+ 
+                 {vehicleUsed === "other" && (
+                   <input
+                     type="text"
+                     value={vehicleCustom}
+                     onChange={(e) => setVehicleCustom(e.target.value)}
+                     placeholder="Describe vehicle"
+                    className="input-full"
+                   />
+                 )}
+               </div>
+             )}
+           </div>
         </div>
-
-        <button type="submit" style={{ marginTop: 6 }}>
-          Add record
-        </button>
-      </form>
-
-      {/* Records table */}
-      <div style={{ marginTop: 20 }}>
-        {records.length === 0 ? (
-          <div>No records</div>
-        ) : (
-          <div
-            style={{
-              maxHeight: 360,
-              overflowY: "auto",
-              border: "1px solid #e6e6e6",
-              borderRadius: 8,
-              padding: 0,
-            }}
-          >
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead style={{ position: "sticky", top: 0, background: "#fafafa", zIndex: 1 }}>
-                <tr>
-                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee", width: 110 }}>Date</th>
+ 
+        <div className="form-row">
+           <label style={{ display: "block", fontWeight: 600 }}>Miles (optional)</label>
+          <div className="row" style={{ marginTop: 8 }}>
+             <button
+               type="button"
+               aria-label="decrease distance"
+               onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, -0.1)}
+             >
+               −
+             </button>
+             <input
+               type="number"
+               step="0.1"
+               min="0"
+               value={distanceMiles}
+               onChange={(e) => setDistanceMiles(e.target.value)}
+               placeholder="0.0"
+              className="input-compact"
+             />
+             <button
+               type="button"
+               aria-label="increase distance"
+               onClick={() => adjustNumberState(distanceMiles, setDistanceMiles, 0.1)}
+             >
+               +
+             </button>
+           </div>
+        </div>
+ 
+        <div style={{ marginTop: 6 }}>
+          <button type="submit" className="btn-submit">
+           Add record
+          </button>
+        </div>
+       </form>
+ 
+       {/* Records table */}
+       <div style={{ marginTop: 20 }}>
+         {records.length === 0 ? (
+           <div>No records</div>
+         ) : (
+          <div className="table-wrapper" style={{ maxHeight: 360, border: "1px solid #e6e6e6", borderRadius: 8 }}>
+            <table className="records-table" style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+               <thead style={{ position: "sticky", top: 0, background: "#fafafa", zIndex: 1 }}>
+                 <tr>
+                   <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee", width: 110 }}>Date</th>
                   <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee" }}>Purpose</th>
-                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee", width: 80 }}>Hours</th>
-                  <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee", width: 90 }}>Miles</th>
-                  <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee", width: 160 }}>Vehicle</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records
-                  .slice()
-                  .sort((a: any, b: any) => {
-                    const da = new Date(a.createdAt || 0).getTime();
-                    const db = new Date(b.createdAt || 0).getTime();
-                    return db - da;
-                  })
-                  .map((rec: any) => (
-                    <tr key={rec.id}>
-                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 110 }}>
-                        {rec.date ?? "—"}
-                      </td>
+                   <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee", width: 80 }}>Hours</th>
+                   <th style={{ textAlign: "right", padding: "8px 12px", borderBottom: "1px solid #eee", width: 90 }}>Miles</th>
+                   <th style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid #eee", width: 160 }}>Vehicle</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {records
+                   .slice()
+                   .sort((a: any, b: any) => {
+                     const da = new Date(a.createdAt || 0).getTime();
+                     const db = new Date(b.createdAt || 0).getTime();
+                     return db - da;
+                   })
+                   .map((rec: any) => (
+                     <tr key={rec.id}>
+                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 110 }}>
+                         {rec.date ?? "—"}
+                       </td>
                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2" }}>
-                        <div style={{ fontWeight: 600 }}>{truncate(rec.purpose, 25)}</div>
+                        <div className="purpose-cell" style={{ fontWeight: 600 }}>{truncate(rec.purpose, 25)}</div>
                       </td>
-                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 80 }}>
-                        {rec.hours !== undefined && rec.hours !== null ? Number(rec.hours).toFixed(2) : "—"}
-                      </td>
-                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 90 }}>
-                        {rec.distanceMiles !== undefined && rec.distanceMiles !== null ? Number(rec.distanceMiles).toFixed(1) : "—"}
-                      </td>
-                      <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 160 }}>
-                        {rec.vehicleUsed ?? "—"}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
+                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 80 }}>
+                         {rec.hours !== undefined && rec.hours !== null ? Number(rec.hours).toFixed(2) : "—"}
+                       </td>
+                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", textAlign: "right", width: 90 }}>
+                         {rec.distanceMiles !== undefined && rec.distanceMiles !== null ? Number(rec.distanceMiles).toFixed(1) : "—"}
+                       </td>
+                       <td style={{ padding: "10px 12px", borderBottom: "1px solid #f2f2f2", width: 160 }}>
+                         {rec.vehicleUsed ?? "—"}
+                       </td>
+                     </tr>
+                   ))}
+               </tbody>
+             </table>
++          </div>
+         )}
+       </div>
+     </main>
+   );
+ }
